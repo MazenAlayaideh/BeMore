@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeMore — Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1627;
+    --panel: #131D32;
+    --panel-2: #1A253E;
+    --gold: #C9A24B;
+    --mint: #B5DEB8;
+    --text: #ffffff;
+    --text-dim: #A0ABC0;
+    --text-faint: #718096;
+    --border: rgba(255,255,255,0.08);
+    --green: #8FD79A;
+    --green-bg: rgba(143,215,154,0.12);
+    --red: #E39187;
+    --red-bg: rgba(227,145,135,0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    position: relative;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, .display { font-family: 'Outfit', sans-serif; }
+  .tech { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.16; pointer-events: none; z-index: 0; }
+  .orb-1 { width: 480px; height: 480px; background: var(--gold); top: -200px; left: -160px; }
+  .orb-2 { width: 440px; height: 440px; background: var(--mint); bottom: -160px; right: -140px; }
+
+  header {
+    position: relative; z-index: 2;
+    background: rgba(19,29,50,0.7);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .auth-status { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  #login-link-btn {
+    background: var(--gold); color: var(--navy); text-decoration: none; padding: 8px 16px; border-radius: 999px;
+    font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
+  }
+  #username-display { font-size: 12.5px; color: var(--mint); font-family: 'JetBrains Mono', monospace; }
+  #logout-btn {
+    cursor: pointer; background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    padding: 8px 16px; border-radius: 999px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600;
+  }
+  #logout-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  .mini-mascot-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+  .mini-mascot {
+    width: 42px; height: 26px; background-color: var(--mint); border-radius: 8px;
+    position: relative; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275);
+    box-shadow: 0 0 14px rgba(181,222,184,0.35);
+  }
+  .mini-mascot-link:hover .mini-mascot { transform: scale(1.12); }
+  .mini-eye { width: 4px; height: 4px; background: #0d0d0d; border-radius: 50%; }
+  header a.brand-word {
+    color: var(--gold);
+    text-decoration: none;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    color: var(--text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Manrope', sans-serif;
+  }
+
+  .layout {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 230px 1fr 270px;
+    gap: 24px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 26px 24px 60px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 6px; }
+  .tab-btn {
+    flex: 1; background: none; border: none; padding: 14px 4px 12px; font-size: 10.5px; font-weight: 600;
+    color: var(--text-faint); cursor: pointer; border-bottom: 2px solid transparent;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .tab-btn:hover { color: var(--text-dim); }
+  .tab-btn.active { color: var(--mint); border-bottom-color: var(--mint); }
+  .tab-content { display: none; padding: 18px; height: 520px; overflow-y: auto; }
+  .tab-content.notes-flex { display: none; flex-direction: column; padding: 0; overflow: hidden; }
+  .tab-content.notes-flex.active { display: flex; }
+  .notes-header { padding: 18px 18px 0; flex-shrink: 0; }
+  .notes-scroll-area { flex: 1; overflow-y: auto; padding: 0 18px; margin-top: 12px; }
+  .notes-input-row { flex-shrink: 0; padding: 14px 18px; border-top: 1px solid var(--border); }
+  .tab-content.active { display: block; }
+  .tab-eyebrow { color: var(--gold); font-size: 9.5px; margin: 0 0 6px; }
+  .tab-title { font-size: 16px; font-weight: 700; margin: 0 0 16px; }
+  .tab-placeholder { color: var(--text-faint); font-size: 12.5px; text-align: center; padding: 34px 10px; }
+
+  .note-item { border-bottom: 1px solid var(--border); padding: 10px 0; font-size: 12.5px; display: flex; gap: 10px; align-items: flex-start; }
+  .note-item:last-child { border-bottom: none; }
+  .note-delete-btn {
+    background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 16px;
+    line-height: 1; padding: 0 2px; flex-shrink: 0; margin-left: auto; transition: color 0.15s;
+  }
+  .note-delete-btn:hover { color: var(--red); }
+  .note-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--gold);
+    background: rgba(201,162,75,0.12); border-radius: 5px; padding: 2px 6px; cursor: pointer; height: fit-content;
+  }
+  .note-content { color: var(--text-dim); flex: 1; min-width: 0; word-wrap: break-word; }
+  #note-input {
+    width: 100%; font-family: inherit; font-size: 13px; padding: 10px;
+    border: 1px solid var(--border); border-radius: 8px; resize: vertical; min-height: 54px; max-height: 120px;
+    background: var(--panel-2); color: var(--text);
+  }
+  #note-input::placeholder { color: var(--text-faint); }
+  #add-note-btn {
+    width: 100%; margin-top: 10px; background: var(--gold); color: var(--navy); border: none; border-radius: 999px;
+    padding: 10px; font-family: 'Outfit', sans-serif; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #add-note-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,162,75,0.3); }
+
+  .quiz-intro { text-align: center; padding: 30px 10px; }
+  .quiz-intro p { color: var(--text-faint); font-size: 12.5px; margin-bottom: 16px; }
+  #take-quiz-btn {
+    background: var(--gold); color: var(--navy); border: none; border-radius: 999px;
+    padding: 11px 22px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #take-quiz-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,162,75,0.3); }
+  #generate-quiz-btn, #retake-quiz-btn {
+    background: var(--gold); color: var(--navy); border: none; border-radius: 999px;
+    padding: 10px 20px; font-family: 'Outfit', sans-serif; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #generate-quiz-btn:hover, #retake-quiz-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,162,75,0.3); }
+  #generate-quiz-btn:disabled { background: #3A4155; color: var(--text-faint); cursor: not-allowed; transform: none; box-shadow: none; }
+  .quiz-question { margin-bottom: 20px; }
+  .quiz-question-text { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .quiz-option {
+    display: flex; align-items: center; gap: 9px; font-size: 12.5px; padding: 9px 12px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; transition: border-color 0.15s, background 0.15s;
+  }
+  .quiz-option:hover { border-color: rgba(181,222,184,0.35); background: rgba(181,222,184,0.05); }
+  .quiz-written-input {
+    width: 100%; font-family: 'Manrope', sans-serif; font-size: 13px; padding: 10px;
+    border: 1px solid var(--border); border-radius: 8px; resize: vertical; min-height: 54px;
+    background: var(--panel-2); color: var(--text);
+  }
+  #submit-quiz-btn {
+    width: 100%; margin-top: 8px; background: var(--mint); color: var(--navy); border: none; border-radius: 999px;
+    padding: 12px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #submit-quiz-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(181,222,184,0.3); }
+  #submit-quiz-btn:disabled { background: #3A4155; color: var(--text-faint); cursor: not-allowed; transform: none; box-shadow: none; }
+  .quiz-result-summary {
+    text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 20px; color: var(--mint);
+    margin-bottom: 18px; padding: 14px; background: var(--panel-2); border-radius: 12px; border: 1px solid var(--border);
+  }
+  .quiz-result-item { border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 12px; border: 1px solid var(--border); }
+  .quiz-result-item.correct { background: var(--green-bg); border-color: rgba(143,215,154,0.3); }
+  .quiz-result-item.incorrect { background: var(--red-bg); border-color: rgba(227,145,135,0.3); }
+  .quiz-result-question { font-weight: 600; margin-bottom: 5px; color: var(--text); }
+  .quiz-result-status { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  .quiz-result-status.correct { color: var(--green); }
+  .quiz-result-status.incorrect { color: var(--red); }
+  .quiz-result-detail { margin-top: 5px; color: var(--text-dim); }
+
+  video {
+    border-radius: 16px; background: #000; display: block; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    margin: 0 auto;
+  }
+  .video-wrap.landscape video { width: 100%; height: auto; }
+  .video-wrap.portrait video { width: auto; max-width: 78%; max-height: 74vh; object-fit: contain; }
+
+  .video-wrap { position: relative; display: flex; justify-content: center; }
+  .video-wrap:fullscreen { width: 100vw; height: 100vh; background: #000; }
+  .video-wrap:fullscreen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .video-wrap:-webkit-full-screen { width: 100vw; height: 100vh; background: #000; }
+  .video-wrap:-webkit-full-screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .caption-overlay {
+    position: absolute;
+    bottom: 54px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 72%;
+    max-width: 560px;
+    max-height: 78px;
+    overflow-y: auto;
+    text-align: center;
+    background: rgba(0,0,0,0.78);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.45;
+    padding: 8px 16px;
+    border-radius: 8px;
+    pointer-events: none;
+    display: none;
+  }
+  .caption-overlay.visible { display: block; }
+  .caption-overlay[dir="rtl"] { direction: rtl; }
+
+  /* When the video-wrap itself goes fullscreen, scale caption text up a bit */
+  .video-wrap:fullscreen .caption-overlay { font-size: 20px; max-height: 110px; bottom: 80px; }
+  .video-wrap:-webkit-full-screen .caption-overlay { font-size: 20px; max-height: 110px; bottom: 80px; }
+
+  .caption-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .lang-pill {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .lang-pill:hover { border-color: rgba(181,222,184,0.35); color: var(--text); }
+  .lang-pill.active { background: var(--mint); color: var(--navy); border-color: var(--mint); }
+  .lang-pill.off-pill { margin-left: 6px; opacity: 0.75; }
+  .lang-pill.off-pill.active { background: var(--panel-2); color: var(--text-dim); border-color: var(--border); }
+  .caption-status { font-size: 11.5px; color: var(--text-faint); margin-left: 4px; }
+
+  .toc-box { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
+  .toc-eyebrow { color: var(--gold); font-size: 10px; margin: 0 0 8px; }
+  .toc-box h2 { font-size: 20px; font-weight: 700; margin: 0 0 18px; }
+
+  .toc-track { position: relative; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); margin-bottom: 18px; }
+  .toc-dot {
+    position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%; transform: translate(-50%, -50%);
+    background: rgba(201,162,75,0.5); cursor: pointer; transition: all 0.2s;
+  }
+  .toc-dot.active { background: var(--mint); box-shadow: 0 0 10px rgba(181,222,184,0.8); width: 12px; height: 12px; }
+
+  #toc-list { max-height: 230px; overflow-y: auto; }
+  .toc-item {
+    display: flex; align-items: center; gap: 14px; padding: 11px 12px; border-radius: 10px; cursor: pointer;
+    border: 1px solid transparent; transition: border-color 0.15s, background 0.15s;
+  }
+  .toc-item:hover { background: rgba(255,255,255,0.03); }
+  .toc-item.active { border-color: rgba(181,222,184,0.35); background: rgba(181,222,184,0.06); }
+  .toc-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-faint); min-width: 42px;
+  }
+  .toc-item.active .toc-time { color: var(--mint); }
+  .toc-title { font-size: 13.5px; color: var(--text-dim); }
+  .toc-item.active .toc-title { color: var(--text); }
+  .empty-note { color: var(--text-faint); font-size: 12.5px; }
+
+  .chat-panel-header { padding: 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .chat-panel-header .tab-eyebrow { margin-bottom: 2px; }
+  .chat-panel-header h2 { font-size: 16px; font-weight: 700; margin: 0; }
+
+  .bmo-icon {
+    width: 46px; height: 30px; background-color: var(--mint); border-radius: 8px; flex-shrink: 0;
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    transition: transform 0.2s ease;
+  }
+  .bmo-eyes { display: flex; gap: 10px; }
+  .bmo-pupil { width: 5px; height: 5px; background: #0d0d0d; border-radius: 50%; transition: transform 0.15s ease, height 0.15s ease; }
+  .bmo-mouth-svg { width: 20px; height: 9px; overflow: visible; }
+  .bmo-mouth-path { fill: none; stroke: #0d0d0d; stroke-width: 2; stroke-linecap: round; }
+
+  /* Idle: gentle breathing */
+  .bmo-icon.idle { animation: bmoBreathe 3.5s ease-in-out infinite; }
+  @keyframes bmoBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+  /* Thinking: eyes scan side to side, subtle wobble */
+  .bmo-icon.thinking { animation: bmoWobble 1s ease-in-out infinite; }
+  .bmo-icon.thinking .bmo-pupil { animation: bmoScan 1.2s ease-in-out infinite; }
+  @keyframes bmoWobble { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-3deg); } }
+  @keyframes bmoScan { 0%,100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+
+  /* Talking state is driven by JS toggling the mouth path directly (see script below) —
+     animating SVG "d" via pure CSS isn't reliably supported across browsers */
+  .bmo-icon.talking { animation: bmoWobble 0.4s ease-in-out infinite; }
+  #chat-messages { padding: 16px; height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+  .chat-empty { color: var(--text-faint); font-size: 12.5px; text-align: center; padding: 24px 10px; }
+  .chat-question { font-size: 13px; font-weight: 600; color: var(--text); }
+  .chat-answer { font-size: 12.5px; line-height: 1.6; margin-top: 7px; white-space: pre-wrap; color: var(--text-dim); }
+  .chat-source-tag {
+    display: inline-block; margin-top: 9px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px;
+  }
+  .source-lecture { background: rgba(201,162,75,0.15); color: var(--gold); }
+  .source-general { background: rgba(255,255,255,0.08); color: var(--text-faint); }
+  .source-none { background: var(--red-bg); color: var(--red); }
+  .chat-citations { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .citation-chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; background: var(--panel-2);
+    border: 1px solid var(--border); color: var(--mint); font-weight: 600; padding: 4px 9px; border-radius: 999px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .citation-chip:hover { background: rgba(181,222,184,0.15); }
+  .chat-loading { font-size: 12.5px; color: var(--text-faint); font-style: italic; }
+  .chat-input-row { display: flex; gap: 8px; padding: 14px 18px 16px 16px; border-top: 1px solid var(--border); }
+  #chat-input {
+    flex: 1; font-family: 'Manrope', sans-serif; font-size: 13px; padding: 10px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); color: var(--text);
+  }
+  #chat-input::placeholder { color: var(--text-faint); }
+  #chat-send-btn {
+    background: var(--mint); color: var(--navy); border: none; border-radius: 999px;
+    padding: 10px 18px; font-family: 'Outfit', sans-serif; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #chat-send-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(181,222,184,0.3); }
+  #chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-left">
+    <a href="landing.html" class="mini-mascot-link">
+      <div class="mini-mascot">
+        <div class="mini-eye"></div>
+        <div class="mini-eye"></div>
+      </div>
+      <span class="brand-word">BeMore</span>
+    </a>
+    <h1 id="video-title">Loading video...</h1>
+  </div>
+  <div class="auth-status" id="auth-status">
+    <a href="auth.html" id="login-link-btn">Log In</a>
+    <div id="logged-in-user" style="display:none; align-items:center; gap:10px;">
+      <span id="username-display"></span>
+      <button id="logout-btn">Log out</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <div class="panel">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="notes">Notes</button>
+      <button class="tab-btn" data-tab="playlist">Playlist</button>
+      <button class="tab-btn" data-tab="docs">Docs</button>
+      <button class="tab-btn" data-tab="quiz">Quiz</button>
+    </div>
+
+    <div class="tab-content notes-flex active" id="tab-notes">
+      <div class="notes-header">
+        <p class="tab-eyebrow tech">Synchronized Visual Notes</p>
+        <h3 class="tab-title">Pinned to the second</h3>
+      </div>
+      <div id="notes-list" class="notes-scroll-area"><p class="empty-note">No notes yet.</p></div>
+      <div class="notes-input-row">
+        <textarea id="note-input" placeholder="Type a note at the current timestamp..."></textarea>
+        <button id="add-note-btn">Add note</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-playlist">
+      <p class="tab-eyebrow tech">Playlist</p>
+      <h3 class="tab-title">Coming soon</h3>
+      <p class="tab-placeholder">Group lectures into a study playlist — not built yet.</p>
+    </div>
+
+    <div class="tab-content" id="tab-docs">
+      <p class="tab-eyebrow tech">Docs &amp; Slides</p>
+      <h3 class="tab-title">Coming soon</h3>
+      <p class="tab-placeholder">Attach slide decks to unlock even smarter answers — not built yet.</p>
+    </div>
+
+    <div class="tab-content" id="tab-quiz">
+      <p class="tab-eyebrow tech">Auto Flashcards &amp; Quizzes</p>
+      <h3 class="tab-title">Test what you just learned</h3>
+      <p class="tab-placeholder" style="padding: 10px 0 20px;">Generate a flashcard-style quiz from this lecture, graded instantly.</p>
+      <button id="take-quiz-btn">Take the quiz</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="video-wrap">
+      <video id="player" controls></video>
+      <div id="caption-overlay" class="caption-overlay"></div>
+    </div>
+
+    <div class="caption-toggle-row" id="caption-toggle-row">
+      <button class="lang-pill active" data-lang="en">EN</button>
+      <button class="lang-pill" data-lang="ar">AR</button>
+      <button class="lang-pill" data-lang="de">DE</button>
+      <button class="lang-pill" data-lang="es">ES</button>
+      <button class="lang-pill" data-lang="ja">JA</button>
+      <button class="lang-pill off-pill" data-lang="off">CC Off</button>
+      <button class="lang-pill" id="fullscreen-btn" title="Fullscreen with captions">⛶ Fullscreen</button>
+      <span id="caption-status" class="caption-status"></span>
+    </div>
+
+    <div class="toc-box">
+      <p class="toc-eyebrow tech">Multi-Modal Navigation</p>
+      <h2>Jump straight to the topic</h2>
+      <div class="toc-track" id="toc-track"></div>
+      <div id="toc-list"><p class="empty-note">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="chat-panel-header bmo-header">
+      <div class="bmo-icon" id="bmo-icon">
+        <div class="bmo-eyes">
+          <div class="bmo-pupil" id="bmo-left-eye"></div>
+          <div class="bmo-pupil" id="bmo-right-eye"></div>
+        </div>
+        <svg class="bmo-mouth-svg" viewBox="0 0 60 26">
+          <path id="bmo-mouth" class="bmo-mouth-path" d="M 14 8 Q 30 20 46 8" />
+        </svg>
+      </div>
+      <div>
+        <p class="tab-eyebrow tech">AI Study Tutor</p>
+        <h2>BMO</h2>
+      </div>
+    </div>
+    <div id="chat-messages"><p class="chat-empty">Ask BMO about this lecture.</p></div>
+    <div class="chat-input-row">
+      <input id="chat-input" type="text" placeholder="Ask about this lecture..." />
+      <button id="chat-send-btn">Ask</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  const params = new URLSearchParams(window.location.search);
+  const videoId = params.get("video_id");
+
+  const titleEl = document.getElementById("video-title");
+  const playerEl = document.getElementById("player");
+  const tocListEl = document.getElementById("toc-list");
+  const tocTrackEl = document.getElementById("toc-track");
+  const notesListEl = document.getElementById("notes-list");
+  const noteInput = document.getElementById("note-input");
+  const addNoteBtn = document.getElementById("add-note-btn");
+  const chatMessagesEl = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  const chatSendBtn = document.getElementById("chat-send-btn");
+  const takeQuizBtn = document.getElementById("take-quiz-btn");
+  const captionOverlay = document.getElementById("caption-overlay");
+  const captionStatus = document.getElementById("caption-status");
+  const langPills = document.querySelectorAll(".lang-pill[data-lang]");
+  const fullscreenBtn = document.getElementById("fullscreen-btn");
+  const videoWrap = document.querySelector(".video-wrap");
+
+  takeQuizBtn.addEventListener("click", () => {
+    window.location.href = `quiz.html?video_id=${videoId}`;
+  });
+
+  let currentTopics = [];
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    });
+  });
+
+  async function loadVideo() {
+    if (!videoId) { titleEl.textContent = "No video selected"; return; }
+    try {
+      const res = await fetch(`${API_BASE}/videos/${videoId}`);
+      const video = await res.json();
+      if (video.error) { titleEl.textContent = "Video not found"; return; }
+      titleEl.textContent = video.title;
+      playerEl.src = `${API_BASE}/uploads/${encodeURIComponent(video.filename)}`;
+
+      // If arriving from a search result (?t=123.4), jump there once ready
+      const seekTime = params.get("t");
+      if (seekTime !== null) {
+        playerEl.addEventListener("loadedmetadata", () => {
+          playerEl.currentTime = parseFloat(seekTime);
+        }, { once: true });
+      }
+    } catch (err) {
+      titleEl.textContent = "Couldn't reach the backend";
+    }
+  }
+
+  async function loadTopics() {
+    if (!videoId) return;
+    try {
+      const res = await fetch(`${API_BASE}/topics/${videoId}`);
+      const topics = await res.json();
+      currentTopics = topics;
+
+      if (topics.length === 0) {
+        tocListEl.innerHTML = `<p class="empty-note">No table of contents yet.</p>`;
+        tocTrackEl.innerHTML = "";
+        return;
+      }
+
+      const duration = playerEl.duration || Math.max(...topics.map(t => t.start_time)) * 1.15 || 1;
+
+      tocTrackEl.innerHTML = topics.map((t, i) => `
+        <div class="toc-dot" data-index="${i}" style="left:${Math.min((t.start_time / duration) * 100, 97)}%;" onclick="jumpTo(${t.start_time})"></div>
+      `).join("");
+
+      tocListEl.innerHTML = topics.map((t, i) => `
+        <div class="toc-item" data-index="${i}" onclick="jumpTo(${t.start_time})">
+          <span class="toc-time">${formatTime(t.start_time)}</span>
+          <span class="toc-title">${t.title}</span>
+        </div>
+      `).join("");
+    } catch (err) {
+      tocListEl.innerHTML = `<p class="empty-note">Couldn't load the table of contents.</p>`;
+    }
+  }
+
+  function updateActiveTopic() {
+    if (!currentTopics.length) return;
+    const current = playerEl.currentTime || 0;
+    let activeIndex = 0;
+    for (let i = 0; i < currentTopics.length; i++) {
+      if (current >= currentTopics[i].start_time) activeIndex = i;
+    }
+    document.querySelectorAll(".toc-item").forEach(el => {
+      el.classList.toggle("active", parseInt(el.dataset.index) === activeIndex);
+    });
+    document.querySelectorAll(".toc-dot").forEach(el => {
+      el.classList.toggle("active", parseInt(el.dataset.index) === activeIndex);
+    });
+  }
+
+  playerEl.addEventListener("timeupdate", updateActiveTopic);
+  playerEl.addEventListener("loadedmetadata", loadTopics);
+
+  playerEl.addEventListener("loadedmetadata", () => {
+    const videoWrapEl = document.querySelector(".video-wrap");
+    const isPortrait = playerEl.videoHeight > playerEl.videoWidth;
+    videoWrapEl.classList.toggle("portrait", isPortrait);
+    videoWrapEl.classList.toggle("landscape", !isPortrait);
+  });
+
+  function getCurrentUserId() {
+    const savedUser = localStorage.getItem("bemore_user");
+    if (savedUser) {
+      try { return JSON.parse(savedUser).id; } catch (err) { return 1; }
+    }
+    return 1; // guest fallback, matches the backend's default
+  }
+
+  async function loadNotes() {
+    if (!videoId) return;
+    try {
+      const userId = getCurrentUserId();
+      const res = await fetch(`${API_BASE}/notes/${videoId}?user_id=${userId}`);
+      const notes = await res.json();
+      if (notes.length === 0) {
+        notesListEl.innerHTML = `<p class="empty-note">No notes yet.</p>`;
+        return;
+      }
+      notesListEl.innerHTML = notes.map(n => `
+        <div class="note-item">
+          <span class="note-time" onclick="jumpTo(${n.timestamp_seconds})">${formatTime(n.timestamp_seconds)}</span>
+          <div class="note-content">${n.content}</div>
+          <button class="note-delete-btn" onclick="deleteNote(${n.id})" title="Delete note">&times;</button>
+        </div>
+      `).join("");
+    } catch (err) {
+      notesListEl.innerHTML = `<p class="empty-note">Couldn't load notes.</p>`;
+    }
+  }
+
+  async function deleteNote(noteId) {
+    if (!confirm("Delete this note?")) return;
+    try {
+      await fetch(`${API_BASE}/notes/${noteId}`, { method: "DELETE" });
+      loadNotes();
+    } catch (err) {
+      alert("Couldn't delete the note. Is the backend running?");
+    }
+  }
+
+  addNoteBtn.addEventListener("click", async () => {
+    const savedUser = localStorage.getItem("bemore_user");
+    if (!savedUser) {
+      alert("Please log in to save notes.");
+      window.location.href = "auth.html";
+      return;
+    }
+
+    const content = noteInput.value.trim();
+    if (!content) return;
+    if (!videoId) { alert("No video selected."); return; }
+    const timestamp = playerEl.currentTime || 0;
+    const userId = getCurrentUserId();
+    addNoteBtn.disabled = true;
+    try {
+      await fetch(`${API_BASE}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ video_id: parseInt(videoId), timestamp_seconds: timestamp, content, user_id: userId })
+      });
+      noteInput.value = "";
+      loadNotes();
+    } catch (err) {
+      alert("Couldn't save the note. Is the backend running?");
+    } finally {
+      addNoteBtn.disabled = false;
+    }
+  });
+
+  let chatHasMessages = false;
+
+  // --- BMO mascot state machine ---
+  const bmoIcon = document.getElementById("bmo-icon");
+  const bmoLeftEye = document.getElementById("bmo-left-eye");
+  const bmoRightEye = document.getElementById("bmo-right-eye");
+  const bmoMouth = document.getElementById("bmo-mouth");
+
+  const BMO_MOUTH_SMILE = "M 14 8 Q 30 20 46 8";
+  const BMO_MOUTH_FLAT = "M 16 10 Q 30 10 44 10";
+  const BMO_MOUTH_TALK = "M 18 10 Q 30 14 42 10";
+
+  let bmoTalkInterval = null;
+  let bmoTalkFrame = false;
+
+  function setBmoState(state) {
+    bmoIcon.classList.remove("idle", "thinking", "talking");
+    bmoIcon.classList.add(state);
+
+    if (bmoTalkInterval) {
+      clearInterval(bmoTalkInterval);
+      bmoTalkInterval = null;
+    }
+
+    if (state === "idle") {
+      bmoMouth.setAttribute("d", BMO_MOUTH_SMILE);
+    } else if (state === "thinking") {
+      bmoMouth.setAttribute("d", BMO_MOUTH_FLAT);
+    } else if (state === "talking") {
+      bmoTalkInterval = setInterval(() => {
+        bmoTalkFrame = !bmoTalkFrame;
+        bmoMouth.setAttribute("d", bmoTalkFrame ? BMO_MOUTH_TALK : BMO_MOUTH_SMILE);
+      }, 140);
+    }
+  }
+
+  function bmoBlinkLoop() {
+    bmoLeftEye.style.transform = "scaleY(0.1)";
+    bmoRightEye.style.transform = "scaleY(0.1)";
+    setTimeout(() => {
+      bmoLeftEye.style.transform = "scaleY(1)";
+      bmoRightEye.style.transform = "scaleY(1)";
+    }, 130);
+    setTimeout(bmoBlinkLoop, Math.random() * 3500 + 2500);
+  }
+
+  setBmoState("idle");
+  setTimeout(bmoBlinkLoop, 2000);
+
+  function sourceLabel(source) {
+    if (source === "lecture_transcript") return { text: "From your lecture", cls: "source-lecture" };
+    if (source === "general_knowledge") return { text: "General knowledge", cls: "source-general" };
+    return { text: "No transcript yet", cls: "source-none" };
+  }
+
+  function renderQuestion(question) {
+    if (!chatHasMessages) {
+      chatMessagesEl.innerHTML = "";
+      chatHasMessages = true;
+    }
+    const block = document.createElement("div");
+    block.className = "chat-block";
+    block.innerHTML = `<div class="chat-question">${question}</div>`;
+    chatMessagesEl.appendChild(block);
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    return block;
+  }
+
+  function renderLoading(block) {
+    setBmoState("thinking");
+    const loading = document.createElement("div");
+    loading.className = "chat-loading";
+    loading.textContent = "BMO is thinking...";
+    block.appendChild(loading);
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    return loading;
+  }
+
+  function renderAnswer(block, loadingEl, data) {
+    loadingEl.remove();
+    setBmoState("talking");
+    setTimeout(() => setBmoState("idle"), 1400);
+
+    const answerEl = document.createElement("div");
+    answerEl.className = "chat-answer";
+    answerEl.textContent = data.answer;
+    block.appendChild(answerEl);
+
+    const label = sourceLabel(data.source);
+    const tagEl = document.createElement("span");
+    tagEl.className = `chat-source-tag ${label.cls}`;
+    tagEl.textContent = label.text;
+    block.appendChild(tagEl);
+
+    if (data.citations && data.citations.length > 0) {
+      const citeWrap = document.createElement("div");
+      citeWrap.className = "chat-citations";
+      data.citations.forEach(c => {
+        const chip = document.createElement("span");
+        chip.className = "citation-chip";
+        chip.textContent = formatTime(c.start_time);
+        chip.onclick = () => jumpTo(c.start_time);
+        citeWrap.appendChild(chip);
+      });
+      block.appendChild(citeWrap);
+    }
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  async function askQuestion() {
+    const question = chatInput.value.trim();
+    if (!question) return;
+    if (!videoId) { alert("No video selected."); return; }
+    chatInput.value = "";
+    chatSendBtn.disabled = true;
+    const block = renderQuestion(question);
+    const loadingEl = renderLoading(block);
+    try {
+      const res = await fetch(`${API_BASE}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, video_id: parseInt(videoId) })
+      });
+      const data = await res.json();
+      renderAnswer(block, loadingEl, data);
+    } catch (err) {
+      loadingEl.textContent = "Couldn't reach the backend. Is it running?";
+      setBmoState("idle");
+    } finally {
+      chatSendBtn.disabled = false;
+    }
+  }
+
+  chatSendBtn.addEventListener("click", askQuestion);
+  chatInput.addEventListener("keydown", (e) => { if (e.key === "Enter") askQuestion(); });
+
+  function jumpTo(seconds) {
+    playerEl.currentTime = seconds;
+    playerEl.play();
+  }
+
+  // --- Auth status ---
+  (function initAuthStatus() {
+    const loginLinkBtn = document.getElementById("login-link-btn");
+    const loggedInBox = document.getElementById("logged-in-user");
+    const usernameDisplay = document.getElementById("username-display");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    const savedUser = localStorage.getItem("bemore_user");
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        usernameDisplay.textContent = `Welcome, ${user.name} (${user.role})`;
+        loginLinkBtn.style.display = "none";
+        loggedInBox.style.display = "flex";
+      } catch (err) {
+        localStorage.removeItem("bemore_user");
+      }
+    }
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("bemore_user");
+      window.location.href = "landing.html";
+    });
+  })();
+
+  // --- Captions ---
+  const RTL_LANGUAGES = ["ar"];
+  let allCaptions = [];       // everything loaded so far, any language
+  let activeLanguage = "en";
+  let activeLanguageCaptions = [];
+
+  async function loadCaptions() {
+    if (!videoId) return;
+    try {
+      const res = await fetch(`${API_BASE}/captions/${videoId}`);
+      allCaptions = await res.json();
+      applyActiveLanguage();
+    } catch (err) {
+      captionStatus.textContent = "Couldn't load captions.";
+    }
+  }
+
+  function applyActiveLanguage() {
+    if (activeLanguage === "off") {
+      activeLanguageCaptions = [];
+      captionOverlay.classList.remove("visible");
+      captionStatus.textContent = "";
+      return;
+    }
+
+    activeLanguageCaptions = allCaptions
+      .filter(c => c.language === activeLanguage)
+      .sort((a, b) => a.start_time - b.start_time);
+
+    if (RTL_LANGUAGES.includes(activeLanguage)) {
+      captionOverlay.setAttribute("dir", "rtl");
+    } else {
+      captionOverlay.removeAttribute("dir");
+    }
+
+    if (activeLanguageCaptions.length === 0) {
+      captionStatus.innerHTML = `No captions yet for this language — <a href="#" id="gen-caption-link" style="color:var(--mint); text-decoration:underline;">generate them</a>`;
+      const link = document.getElementById("gen-caption-link");
+      if (link) {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          generateCaptionsForActiveLanguage();
+        });
+      }
+    } else {
+      captionStatus.textContent = "";
+    }
+  }
+
+  async function generateCaptionsForActiveLanguage() {
+    if (activeLanguage === "off") return;
+    captionStatus.textContent = "Generating captions... this can take a few minutes.";
+    try {
+      const res = await fetch(`${API_BASE}/captions/generate/${videoId}?language=${activeLanguage}`, { method: "POST" });
+      const data = await res.json();
+      if (data.status === "success") {
+        await loadCaptions();
+      } else {
+        captionStatus.textContent = data.message || "Couldn't generate captions.";
+      }
+    } catch (err) {
+      captionStatus.textContent = "Couldn't reach the backend.";
+    }
+  }
+
+  langPills.forEach(pill => {
+    pill.addEventListener("click", () => {
+      langPills.forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      activeLanguage = pill.dataset.lang;
+      applyActiveLanguage();
+    });
+  });
+
+  fullscreenBtn.addEventListener("click", () => {
+    if (videoWrap.requestFullscreen) {
+      videoWrap.requestFullscreen();
+    } else if (videoWrap.webkitRequestFullscreen) {
+      videoWrap.webkitRequestFullscreen();
+    }
+  });
+
+  playerEl.addEventListener("timeupdate", () => {
+    if (activeLanguage === "off" || activeLanguageCaptions.length === 0) return;
+    const current = playerEl.currentTime;
+    const match = activeLanguageCaptions.find(c => current >= c.start_time && current <= c.end_time);
+    if (match) {
+      captionOverlay.textContent = match.content;
+      captionOverlay.classList.add("visible");
+    } else {
+      captionOverlay.classList.remove("visible");
+    }
+  });
+
+  loadVideo();
+  loadTopics();
+  loadNotes();
+  loadCaptions();
+</script>
+
+</body>
+</html>

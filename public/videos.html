@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeMore — Your Videos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1627; --panel: #131D32; --panel-2: #1A253E;
+    --gold: #C9A24B; --mint: #B5DEB8;
+    --text: #ffffff; --text-dim: #A0ABC0; --text-faint: #718096;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--navy); color: var(--text);
+    position: relative; overflow-x: hidden;
+  }
+  h1, h2 { font-family: 'Outfit', sans-serif; }
+  .tech { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.15em; text-transform: uppercase; }
+  a { color: inherit; text-decoration: none; }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.16; pointer-events: none; z-index: 0; }
+  .orb-1 { width: 460px; height: 460px; background: var(--gold); top: -180px; left: -160px; }
+  .orb-2 { width: 420px; height: 420px; background: var(--mint); bottom: -160px; right: -140px; }
+
+  header {
+    position: relative; z-index: 2;
+    background: rgba(19,29,50,0.7);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .mini-mascot-link { display: flex; align-items: center; gap: 10px; }
+  .mini-mascot {
+    width: 42px; height: 26px; background-color: var(--mint); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 0 14px rgba(181,222,184,0.35);
+  }
+  .mini-eye { width: 4px; height: 4px; background: #0d0d0d; border-radius: 50%; }
+  .brand-word { color: var(--gold); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 17px; }
+  #username-display { font-size: 12.5px; color: var(--mint); font-family: 'JetBrains Mono', monospace; }
+  #login-link-btn { background: var(--gold); color: var(--navy); padding: 8px 16px; border-radius: 999px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; }
+  #logout-btn { cursor: pointer; background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 8px 16px; border-radius: 999px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; }
+  #logout-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+  main { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 50px 24px 80px; }
+
+  .page-head { margin-bottom: 30px; }
+  .page-head p.tech { color: var(--gold); font-size: 11px; margin: 0 0 8px; }
+  .page-head h1 { font-size: 32px; margin: 0; }
+
+  .search-box {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 18px; margin-bottom: 10px;
+  }
+  .search-box svg { color: var(--mint); flex-shrink: 0; }
+  #search-input {
+    flex: 1; background: none; border: none; outline: none; color: var(--text);
+    font-family: 'Manrope', sans-serif; font-size: 15px;
+  }
+  #search-input::placeholder { color: var(--text-faint); }
+  #search-clear {
+    background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 18px;
+    display: none; padding: 0 4px;
+  }
+  .search-hint { font-size: 11.5px; color: var(--text-faint); margin: 0 0 30px 4px; }
+
+  .section-label { font-size: 10.5px; color: var(--gold); margin: 0 0 14px 4px; }
+
+  .result-card, .video-item {
+    display: block; background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 10px; transition: border-color 0.15s, transform 0.15s;
+  }
+  .result-card:hover, .video-item:hover { border-color: rgba(181,222,184,0.3); transform: translateY(-2px); }
+
+  .result-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .result-title, .video-title { font-weight: 600; font-size: 14.5px; }
+  .result-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold);
+    background: rgba(201,162,75,0.12); padding: 3px 9px; border-radius: 999px; flex-shrink: 0;
+  }
+  .result-snippet { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+  .status-badge {
+    font-size: 10px; padding: 3px 9px; border-radius: 999px; text-transform: uppercase;
+    letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+  }
+  .status-ready { background: rgba(143,215,154,0.15); color: #8FD79A; }
+  .status-processing { background: rgba(201,162,75,0.15); color: var(--gold); }
+  .status-uploaded { background: rgba(255,255,255,0.08); color: var(--text-faint); }
+
+  .empty-note { color: var(--text-faint); font-size: 13.5px; padding: 20px 4px; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <a href="landing.html" class="mini-mascot-link">
+    <div class="mini-mascot"><div class="mini-eye"></div><div class="mini-eye"></div></div>
+    <span class="brand-word">BeMore</span>
+  </a>
+  <div id="auth-status" style="display:flex; align-items:center; gap:10px;">
+    <a href="auth.html" id="login-link-btn">Log In</a>
+    <div id="logged-in-user" style="display:none; align-items:center; gap:10px;">
+      <span id="username-display"></span>
+      <button id="logout-btn">Log out</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <p class="tech">Video Library</p>
+    <h1>Find a lecture</h1>
+  </div>
+
+  <div class="search-box">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+    <input id="search-input" type="text" placeholder="Search by concept, not just keywords...">
+    <button id="search-clear">&times;</button>
+  </div>
+  <p class="search-hint">Searches instructor-uploaded lectures by meaning — try a topic, not just an exact phrase.</p>
+
+  <div id="content-area">
+    <p class="section-label tech">All videos</p>
+    <div id="video-list"><p class="empty-note">Loading...</p></div>
+  </div>
+</main>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  const videoListEl = document.getElementById("video-list");
+  const contentAreaLabel = document.querySelector(".section-label");
+  const searchInput = document.getElementById("search-input");
+  const searchClear = document.getElementById("search-clear");
+
+  let allVideos = [];
+  let searchDebounce = null;
+  let pendingIncomingQuery = new URLSearchParams(window.location.search).get("q");
+  const isMyLibrary = new URLSearchParams(window.location.search).get("mine") === "true";
+
+  const savedUserRaw = localStorage.getItem("bemore_user");
+  const currentUser = savedUserRaw ? JSON.parse(savedUserRaw) : null;
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+
+  async function loadVideos() {
+    if (isMyLibrary && !currentUser) {
+      videoListEl.innerHTML = `<p class="empty-note">Please <a href="auth.html" style="color:var(--mint); text-decoration:underline;">log in</a> to view your library.</p>`;
+      document.querySelector(".page-head h1").textContent = "My Library";
+      document.querySelector(".search-box").style.display = "none";
+      document.querySelector(".search-hint").style.display = "none";
+      return;
+    }
+
+    if (isMyLibrary) {
+      document.querySelector(".page-head h1").textContent = "My Library";
+      document.querySelector(".search-box").style.display = "none";
+      document.querySelector(".search-hint").style.display = "none";
+    }
+
+    try {
+      const url = isMyLibrary
+        ? `${API_BASE}/videos?owner_id=${currentUser.id}`
+        : `${API_BASE}/videos`;
+      const res = await fetch(url);
+      allVideos = await res.json();
+      if (!pendingIncomingQuery) renderVideoList();
+    } catch (err) {
+      if (!pendingIncomingQuery) videoListEl.innerHTML = `<p class="empty-note">Couldn't reach the backend. Is the server running?</p>`;
+    }
+  }
+
+  function renderVideoList() {
+    contentAreaLabel.textContent = isMyLibrary ? "Your uploads" : "All videos";
+    if (allVideos.length === 0) {
+      videoListEl.innerHTML = isMyLibrary
+        ? `<p class="empty-note">You haven't uploaded any videos yet.</p>`
+        : `<p class="empty-note">No videos uploaded yet.</p>`;
+      return;
+    }
+    videoListEl.innerHTML = allVideos.map(v => `
+      <a class="video-item" href="workspace.html?video_id=${v.id}">
+        <div class="result-top">
+          <span class="video-title">${v.title}</span>
+          <span class="status-badge status-${v.status}">${v.status}</span>
+        </div>
+      </a>
+    `).join("");
+  }
+
+  async function runSearch(query) {
+    contentAreaLabel.textContent = `Results for "${query}"`;
+    videoListEl.innerHTML = `<p class="empty-note">Searching...</p>`;
+    try {
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&limit=8`);
+      const data = await res.json();
+      if (!data.results || data.results.length === 0) {
+        videoListEl.innerHTML = `<p class="empty-note">No matching instructor-verified lectures found.</p>`;
+        return;
+      }
+      videoListEl.innerHTML = data.results.map(r => `
+        <div class="result-card">
+          <div class="result-top">
+            <a href="workspace.html?video_id=${r.video_id}" class="result-title">${r.title}</a>
+            <a href="workspace.html?video_id=${r.video_id}&t=${r.start_time}" class="result-time">Jump to ${formatTime(r.start_time)}</a>
+          </div>
+          <div class="result-snippet">"${r.snippet}"</div>
+        </div>
+      `).join("");
+    } catch (err) {
+      videoListEl.innerHTML = `<p class="empty-note">Couldn't reach the backend.</p>`;
+    }
+  }
+
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim();
+    searchClear.style.display = query ? "block" : "none";
+    clearTimeout(searchDebounce);
+
+    if (!query) {
+      renderVideoList();
+      return;
+    }
+    searchDebounce = setTimeout(() => runSearch(query), 450);
+  });
+
+  searchClear.addEventListener("click", () => {
+    searchInput.value = "";
+    searchClear.style.display = "none";
+    renderVideoList();
+  });
+
+  // If arriving from the landing page with ?q=..., run that search immediately
+  if (pendingIncomingQuery) {
+    searchInput.value = pendingIncomingQuery;
+    searchClear.style.display = "block";
+    runSearch(pendingIncomingQuery);
+  }
+
+  // --- Auth status ---
+  (function initAuthStatus() {
+    const loginLinkBtn = document.getElementById("login-link-btn");
+    const loggedInBox = document.getElementById("logged-in-user");
+    const usernameDisplay = document.getElementById("username-display");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    const savedUser = localStorage.getItem("bemore_user");
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        usernameDisplay.textContent = `Welcome, ${user.name} (${user.role})`;
+        loginLinkBtn.style.display = "none";
+        loggedInBox.style.display = "flex";
+      } catch (err) {
+        localStorage.removeItem("bemore_user");
+      }
+    }
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("bemore_user");
+      window.location.reload();
+    });
+  })();
+
+  loadVideos();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeMore — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1627; --panel: #131D32; --panel-2: #1A253E;
+    --gold: #C9A24B; --mint: #B5DEB8;
+    --text: #ffffff; --text-dim: #A0ABC0; --text-faint: #718096;
+    --border: rgba(255,255,255,0.08);
+    --red: #E39187; --red-bg: rgba(227,145,135,0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--navy); color: var(--text);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow-x: hidden; padding: 20px;
+  }
+  h1, h2 { font-family: 'Outfit', sans-serif; }
+  .tech { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.18; pointer-events: none; z-index: 0; }
+  .orb-1 { width: 460px; height: 460px; background: var(--gold); top: -180px; left: -160px; }
+  .orb-2 { width: 420px; height: 420px; background: var(--mint); bottom: -160px; right: -140px; }
+
+  .card {
+    position: relative; z-index: 1;
+    max-width: 400px; width: 100%;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 22px;
+    padding: 34px 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+
+  .mini-mascot-link { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 26px; width: fit-content; }
+  .mini-mascot {
+    width: 42px; height: 26px; background-color: var(--mint); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 0 14px rgba(181,222,184,0.35);
+  }
+  .mini-eye { width: 4px; height: 4px; background: #0d0d0d; border-radius: 50%; }
+  .brand-word { color: var(--gold); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 17px; }
+
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  .subtitle { color: var(--text-dim); font-size: 13.5px; margin: 0 0 26px; }
+
+  .mode-toggle { display: flex; background: var(--panel-2); border-radius: 999px; padding: 4px; margin-bottom: 24px; }
+  .mode-btn {
+    flex: 1; text-align: center; padding: 9px; border-radius: 999px; border: none; background: none;
+    color: var(--text-faint); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+  }
+  .mode-btn.active { background: var(--mint); color: var(--navy); }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11.5px; color: var(--text-dim); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; }
+  .field input {
+    width: 100%; font-family: 'Manrope', sans-serif; font-size: 14px; padding: 11px 13px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); color: var(--text);
+  }
+  .field input::placeholder { color: var(--text-faint); }
+  .field input:focus { outline: none; border-color: var(--mint); }
+
+  .role-picker { display: flex; gap: 10px; }
+  .role-option {
+    flex: 1; text-align: center; padding: 12px 8px; border: 1px solid var(--border); border-radius: 10px;
+    cursor: pointer; font-size: 12.5px; color: var(--text-dim); transition: all 0.15s;
+  }
+  .role-option.selected { border-color: var(--mint); background: rgba(181,222,184,0.08); color: var(--text); }
+
+  #submit-btn {
+    width: 100%; margin-top: 6px; background: var(--gold); color: var(--navy); border: none; border-radius: 999px;
+    padding: 13px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,162,75,0.3); }
+  #submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  #message { margin-top: 14px; font-size: 12.5px; text-align: center; min-height: 16px; }
+  #message.error { color: var(--red); }
+  #message.success { color: var(--mint); }
+
+  .back-link { display: block; text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-faint); text-decoration: none; }
+  .back-link:hover { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="card">
+  <a href="landing.html" class="mini-mascot-link">
+    <div class="mini-mascot"><div class="mini-eye"></div><div class="mini-eye"></div></div>
+    <span class="brand-word">BeMore</span>
+  </a>
+
+  <h1 id="form-title">Welcome back</h1>
+  <p class="subtitle" id="form-subtitle">Log in to continue to your workspace.</p>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="login-tab" type="button">Log In</button>
+    <button class="mode-btn" id="register-tab" type="button">Register</button>
+  </div>
+
+  <form id="auth-form">
+    <div class="field" id="name-field" style="display:none;">
+      <label>Name</label>
+      <input type="text" id="name-input" placeholder="Your full name">
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email-input" placeholder="you@example.com" required>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password-input" placeholder="••••••••" required>
+    </div>
+
+    <div class="field" id="role-field" style="display:none;">
+      <label>I am a...</label>
+      <div class="role-picker">
+        <div class="role-option selected" data-role="student">Student</div>
+        <div class="role-option" data-role="instructor">Instructor</div>
+      </div>
+    </div>
+
+    <button type="submit" id="submit-btn">Log in</button>
+    <div id="message"></div>
+  </form>
+
+  <a href="landing.html" class="back-link">← Back to BeMore</a>
+</div>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+
+  const loginTab = document.getElementById("login-tab");
+  const registerTab = document.getElementById("register-tab");
+  const nameField = document.getElementById("name-field");
+  const roleField = document.getElementById("role-field");
+  const formTitle = document.getElementById("form-title");
+  const formSubtitle = document.getElementById("form-subtitle");
+  const submitBtn = document.getElementById("submit-btn");
+  const messageEl = document.getElementById("message");
+  const authForm = document.getElementById("auth-form");
+
+  let mode = "login";
+  let selectedRole = "student";
+
+  document.querySelectorAll(".role-option").forEach(el => {
+    el.addEventListener("click", () => {
+      document.querySelectorAll(".role-option").forEach(o => o.classList.remove("selected"));
+      el.classList.add("selected");
+      selectedRole = el.dataset.role;
+    });
+  });
+
+  function setMode(newMode) {
+    mode = newMode;
+    messageEl.textContent = "";
+    messageEl.className = "";
+
+    if (mode === "login") {
+      loginTab.classList.add("active");
+      registerTab.classList.remove("active");
+      nameField.style.display = "none";
+      roleField.style.display = "none";
+      formTitle.textContent = "Welcome back";
+      formSubtitle.textContent = "Log in to continue to your workspace.";
+      submitBtn.textContent = "Log in";
+    } else {
+      registerTab.classList.add("active");
+      loginTab.classList.remove("active");
+      nameField.style.display = "block";
+      roleField.style.display = "block";
+      formTitle.textContent = "Create your account";
+      formSubtitle.textContent = "Join BeMore as a student or instructor.";
+      submitBtn.textContent = "Create account";
+    }
+  }
+
+  loginTab.addEventListener("click", () => setMode("login"));
+  registerTab.addEventListener("click", () => setMode("register"));
+
+  authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    messageEl.textContent = "";
+    messageEl.className = "";
+    submitBtn.disabled = true;
+
+    const email = document.getElementById("email-input").value.trim();
+    const password = document.getElementById("password-input").value;
+
+    try {
+      let res;
+
+      if (mode === "login") {
+        res = await fetch(`${API_BASE}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+      } else {
+        const name = document.getElementById("name-input").value.trim();
+        if (!name) {
+          messageEl.textContent = "Please enter your name.";
+          messageEl.className = "error";
+          submitBtn.disabled = false;
+          return;
+        }
+        res = await fetch(`${API_BASE}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role: selectedRole })
+        });
+      }
+
+      // IMPORTANT: our backend always returns HTTP 200, even on a logical
+      // failure (wrong password, duplicate email). The real result lives in
+      // the JSON body's "status" field, never in the HTTP status code.
+      const data = await res.json();
+
+      if (data.status === "success") {
+        localStorage.setItem("bemore_user", JSON.stringify(data.user));
+        messageEl.textContent = "Success! Redirecting...";
+        messageEl.className = "success";
+        setTimeout(() => { window.location.href = "landing.html"; }, 600);
+      } else {
+        messageEl.textContent = data.message || (mode === "login"
+          ? "Incorrect email or password."
+          : "Couldn't create your account.");
+        messageEl.className = "error";
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      messageEl.textContent = "Couldn't reach the backend. Is the server running?";
+      messageEl.className = "error";
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeMore — Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1627;
+    --panel: #131D32;
+    --panel-2: #1A253E;
+    --gold: #C9A24B;
+    --mint: #B5DEB8;
+    --text: #ffffff;
+    --text-dim: #A0ABC0;
+    --text-faint: #718096;
+    --border: rgba(255,255,255,0.08);
+    --green: #8FD79A;
+    --green-bg: rgba(143,215,154,0.12);
+    --red: #E39187;
+    --red-bg: rgba(227,145,135,0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+  .tech { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.16; pointer-events: none; z-index: 0; }
+  .orb-1 { width: 480px; height: 480px; background: var(--gold); top: -200px; left: -160px; }
+  .orb-2 { width: 440px; height: 440px; background: var(--mint); bottom: -160px; right: -140px; }
+
+  header {
+    position: relative; z-index: 2;
+    background: rgba(19,29,50,0.7);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .mini-mascot-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+  .mini-mascot {
+    width: 42px; height: 26px; background-color: var(--mint); border-radius: 8px;
+    position: relative; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275);
+    box-shadow: 0 0 14px rgba(181,222,184,0.35);
+  }
+  .mini-mascot-link:hover .mini-mascot { transform: scale(1.12); }
+  .mini-eye { width: 4px; height: 4px; background: #0d0d0d; border-radius: 50%; }
+  header a.brand-word { color: var(--gold); text-decoration: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 17px; }
+  header h1 { font-size: 14px; font-weight: 500; margin: 0; color: var(--text-dim); font-family: 'Manrope', sans-serif; }
+
+  main {
+    position: relative; z-index: 1;
+    max-width: 640px; margin: 0 auto;
+    padding: 60px 20px 80px;
+    min-height: calc(100vh - 60px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+
+  /* ---------- Loading screen (BMO) ---------- */
+  #loading-view { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+
+  .bmo-body {
+    width: 150px; height: 180px;
+    background-color: var(--mint);
+    border-radius: 22px;
+    border: 3px solid rgba(0,0,0,0.25);
+    box-shadow: 0 10px 0 rgba(0,0,0,0.15), 0 20px 50px rgba(0,0,0,0.4);
+    padding: 14px;
+    display: flex; flex-direction: column; align-items: center;
+    position: relative;
+    animation: bmoFloat 2.2s ease-in-out infinite;
+  }
+  .bmo-screen {
+    width: 100%; height: 92px;
+    background-color: var(--navy);
+    border-radius: 12px;
+    border: 3px solid rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .bmo-eye {
+    width: 9px; height: 9px; background-color: var(--gold); border-radius: 50%;
+    position: absolute; top: 38px; box-shadow: 0 0 8px rgba(201,162,75,0.6);
+    animation: bmoBlink 3.4s infinite;
+  }
+  .bmo-eye.left { left: 34px; }
+  .bmo-eye.right { right: 34px; }
+  .bmo-mouth {
+    width: 18px; height: 9px; border-bottom: 3px solid var(--gold); border-radius: 0 0 10px 10px;
+    position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+  }
+  .bmo-controls { width: 100%; height: 60px; position: relative; margin-top: 10px; }
+  .dpad { width: 26px; height: 26px; position: absolute; left: 10px; top: 15px; }
+  .dpad-h { width: 26px; height: 8px; background-color: var(--gold); position: absolute; top: 9px; border-radius: 2px; }
+  .dpad-v { width: 8px; height: 26px; background-color: var(--gold); position: absolute; left: 9px; border-radius: 2px; }
+  .btn-a { width: 13px; height: 13px; background-color: var(--panel-2); border-radius: 50%; position: absolute; right: 12px; top: 24px; }
+  .btn-b { width: 13px; height: 13px; background-color: var(--panel-2); border-radius: 50%; position: absolute; right: 30px; top: 12px; }
+
+  .progress-bar-container {
+    width: 190px; height: 12px; background-color: var(--panel-2);
+    border: 2px solid var(--mint); border-radius: 8px; overflow: hidden; padding: 2px;
+  }
+  .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), var(--mint)); border-radius: 4px; animation: fillProgress 2.6s ease-in-out infinite; }
+
+  .loading-text { color: var(--mint); font-size: 13px; font-weight: 700; }
+  .loading-sub { color: var(--text-faint); font-size: 11.5px; text-align: center; max-width: 320px; }
+
+  @keyframes bmoFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes bmoBlink { 0%,90%,100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+  @keyframes fillProgress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+
+  /* ---------- Error view ---------- */
+  #error-view { display: none; text-align: center; }
+  #error-view p { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+  #retry-btn {
+    background: var(--gold); color: var(--navy); border: none; border-radius: 999px;
+    padding: 11px 22px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+
+  /* ---------- Flashcard deck ---------- */
+  #deck-view { display: none; width: 100%; }
+
+  .deck-progress { display: flex; justify-content: center; gap: 7px; margin-bottom: 30px; }
+  .deck-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: all 0.2s; }
+  .deck-dot.done { background: var(--mint); }
+  .deck-dot.current { background: var(--gold); width: 22px; border-radius: 4px; }
+
+  .flashcard {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 36px 30px;
+    min-height: 280px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    animation: cardIn 0.35s ease-out;
+  }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+  .card-eyebrow { color: var(--gold); font-size: 10px; margin: 0 0 16px; }
+  .card-question { font-size: 19px; font-weight: 700; line-height: 1.4; margin-bottom: 26px; }
+
+  .card-option {
+    display: flex; align-items: center; gap: 11px; font-size: 13.5px; padding: 13px 16px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; transition: border-color 0.15s, background 0.15s;
+  }
+  .card-option:hover { border-color: rgba(181,222,184,0.35); background: rgba(181,222,184,0.05); }
+  .card-option.selected { border-color: var(--mint); background: rgba(181,222,184,0.1); color: var(--text); }
+  .card-option input { accent-color: var(--mint); }
+
+  .card-written {
+    width: 100%; font-family: 'Manrope', sans-serif; font-size: 14px; padding: 14px;
+    border: 1px solid var(--border); border-radius: 12px; resize: vertical; min-height: 90px;
+    background: var(--panel-2); color: var(--text); margin-bottom: 4px;
+  }
+  .card-written::placeholder { color: var(--text-faint); }
+
+  .deck-nav { display: flex; gap: 12px; margin-top: 26px; }
+  .deck-nav button {
+    flex: 1; border: none; border-radius: 999px; padding: 13px; font-family: 'Outfit', sans-serif;
+    font-weight: 700; font-size: 13.5px; cursor: pointer; transition: transform 0.12s, box-shadow 0.2s, opacity 0.2s;
+  }
+  #prev-btn { background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--border) !important; }
+  #prev-btn:hover { color: var(--text); }
+  #next-btn, #finish-btn { background: var(--mint); color: var(--navy); }
+  #next-btn:hover, #finish-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(181,222,184,0.3); }
+  .deck-nav button:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  /* ---------- Results ---------- */
+  #results-view { display: none; width: 100%; }
+  .results-score {
+    text-align: center; padding: 30px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 22px; margin-bottom: 26px;
+  }
+  .results-score .tech { color: var(--gold); font-size: 10px; }
+  .results-score h2 { font-size: 42px; margin: 10px 0 0; color: var(--mint); }
+
+  .result-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px 22px; margin-bottom: 12px;
+  }
+  .result-card.correct { border-color: rgba(143,215,154,0.35); }
+  .result-card.incorrect { border-color: rgba(227,145,135,0.35); }
+  .result-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; padding: 3px 9px; border-radius: 999px; display: inline-block; margin-bottom: 10px;
+  }
+  .result-status.correct { background: var(--green-bg); color: var(--green); }
+  .result-status.incorrect { background: var(--red-bg); color: var(--red); }
+  .result-question { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .result-detail { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+
+  #retake-btn {
+    width: 100%; margin-top: 20px; background: var(--gold); color: var(--navy); border: none; border-radius: 999px;
+    padding: 14px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s;
+  }
+  #retake-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,162,75,0.3); }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <a id="back-link" href="workspace.html" class="mini-mascot-link">
+    <div class="mini-mascot"><div class="mini-eye"></div><div class="mini-eye"></div></div>
+    <span class="brand-word">BeMore</span>
+  </a>
+  <h1 id="video-title-header">Quiz</h1>
+</header>
+
+<main>
+
+  <div id="loading-view">
+    <div class="bmo-body">
+      <div class="bmo-screen">
+        <div class="bmo-eye left"></div>
+        <div class="bmo-eye right"></div>
+        <div class="bmo-mouth"></div>
+      </div>
+      <div class="bmo-controls">
+        <div class="dpad"><div class="dpad-h"></div><div class="dpad-v"></div></div>
+        <div class="btn-a"></div>
+        <div class="btn-b"></div>
+      </div>
+    </div>
+    <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
+    <div class="loading-text tech">BMO is thinking...</div>
+    <p class="loading-sub">Reading the whole lecture and writing questions from it — this can take a minute or two.</p>
+  </div>
+
+  <div id="error-view">
+    <p id="error-message">Something went wrong generating the quiz.</p>
+    <button id="retry-btn">Try again</button>
+  </div>
+
+  <div id="deck-view">
+    <div class="deck-progress" id="deck-progress"></div>
+    <div class="flashcard" id="flashcard"></div>
+    <div class="deck-nav">
+      <button id="prev-btn">Back</button>
+      <button id="next-btn">Next</button>
+      <button id="finish-btn" style="display:none;">Submit quiz</button>
+    </div>
+  </div>
+
+  <div id="results-view">
+    <div class="results-score">
+      <p class="tech">Your score</p>
+      <h2 id="score-text">0 / 0</h2>
+    </div>
+    <div id="results-list"></div>
+    <button id="retake-btn">Generate a new quiz</button>
+  </div>
+
+</main>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  const params = new URLSearchParams(window.location.search);
+  const videoId = params.get("video_id");
+
+  document.getElementById("back-link").href = videoId ? `workspace.html?video_id=${videoId}` : "landing.html";
+
+  const loadingView = document.getElementById("loading-view");
+  const errorView = document.getElementById("error-view");
+  const errorMessage = document.getElementById("error-message");
+  const deckView = document.getElementById("deck-view");
+  const resultsView = document.getElementById("results-view");
+  const deckProgress = document.getElementById("deck-progress");
+  const flashcardEl = document.getElementById("flashcard");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const finishBtn = document.getElementById("finish-btn");
+
+  let questions = [];
+  let answers = {};
+  let currentIndex = 0;
+
+  function showView(view) {
+    [loadingView, errorView, deckView, resultsView].forEach(v => v.style.display = "none");
+    view.style.display = view === deckView || view === resultsView ? "block" : "flex";
+  }
+
+  async function init() {
+    if (!videoId) {
+      errorMessage.textContent = "No video selected.";
+      showView(errorView);
+      return;
+    }
+
+    showView(loadingView);
+
+    try {
+      const videoRes = await fetch(`${API_BASE}/videos/${videoId}`);
+      const video = await videoRes.json();
+      if (!video.error) document.getElementById("video-title-header").textContent = `Quiz — ${video.title}`;
+    } catch (e) { /* non-critical */ }
+
+    try {
+      const existing = await fetch(`${API_BASE}/quiz/${videoId}`);
+      const existingData = await existing.json();
+
+      if (existingData.quiz_id && existingData.questions.length > 0) {
+        questions = existingData.questions;
+        startDeck();
+        return;
+      }
+
+      const genRes = await fetch(`${API_BASE}/quiz/generate/${videoId}`, { method: "POST" });
+      const genData = await genRes.json();
+
+      if (genData.status === "error") {
+        errorMessage.textContent = genData.message || "Couldn't generate a quiz for this video.";
+        showView(errorView);
+        return;
+      }
+
+      const quizRes = await fetch(`${API_BASE}/quiz/${videoId}`);
+      const quizData = await quizRes.json();
+      questions = quizData.questions;
+      startDeck();
+
+    } catch (err) {
+      errorMessage.textContent = "Couldn't reach the backend. Is the server running?";
+      showView(errorView);
+    }
+  }
+
+  document.getElementById("retry-btn").addEventListener("click", init);
+
+  function startDeck() {
+    if (!questions.length) {
+      errorMessage.textContent = "No questions came back for this video.";
+      showView(errorView);
+      return;
+    }
+    currentIndex = 0;
+    answers = {};
+    renderDots();
+    renderCard();
+    showView(deckView);
+  }
+
+  function renderDots() {
+    deckProgress.innerHTML = questions.map((_, i) => {
+      let cls = "deck-dot";
+      if (i === currentIndex) cls += " current";
+      else if (answers[questions[i].id] !== undefined) cls += " done";
+      return `<div class="${cls}"></div>`;
+    }).join("");
+  }
+
+  function renderCard() {
+    const q = questions[currentIndex];
+    const eyebrow = `Question ${currentIndex + 1} of ${questions.length}`;
+
+    if (q.question_type === "mcq") {
+      const optionsHtml = q.options.map(o => {
+        const selected = answers[q.id] === String(o.id);
+        return `
+          <label class="card-option ${selected ? "selected" : ""}" data-option-id="${o.id}">
+            <input type="radio" name="opt" value="${o.id}" ${selected ? "checked" : ""}>
+            ${o.option_text}
+          </label>
+        `;
+      }).join("");
+
+      flashcardEl.innerHTML = `
+        <p class="card-eyebrow tech">${eyebrow}</p>
+        <div class="card-question">${q.question_text}</div>
+        <div>${optionsHtml}</div>
+      `;
+
+      flashcardEl.querySelectorAll(".card-option").forEach(el => {
+        el.addEventListener("click", () => {
+          answers[q.id] = el.dataset.optionId;
+          renderCard();
+          renderDots();
+        });
+      });
+    } else {
+      const existingAnswer = answers[q.id] || "";
+      flashcardEl.innerHTML = `
+        <p class="card-eyebrow tech">${eyebrow}</p>
+        <div class="card-question">${q.question_text}</div>
+        <textarea class="card-written" id="written-input" placeholder="Type your answer...">${existingAnswer}</textarea>
+      `;
+      document.getElementById("written-input").addEventListener("input", (e) => {
+        answers[q.id] = e.target.value;
+        renderDots();
+      });
+    }
+
+    prevBtn.disabled = currentIndex === 0;
+    const isLast = currentIndex === questions.length - 1;
+    nextBtn.style.display = isLast ? "none" : "block";
+    finishBtn.style.display = isLast ? "block" : "none";
+  }
+
+  prevBtn.addEventListener("click", () => {
+    if (currentIndex > 0) { currentIndex--; renderCard(); renderDots(); }
+  });
+  nextBtn.addEventListener("click", () => {
+    if (currentIndex < questions.length - 1) { currentIndex++; renderCard(); renderDots(); }
+  });
+  finishBtn.addEventListener("click", submitQuiz);
+
+  async function submitQuiz() {
+    finishBtn.disabled = true;
+    finishBtn.textContent = "Grading...";
+
+    const answerList = questions.map(q => ({
+      question_id: q.id,
+      answer: answers[q.id] !== undefined ? String(answers[q.id]) : ""
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE}/quiz/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ video_id: parseInt(videoId), answers: answerList })
+      });
+      const data = await res.json();
+      renderResults(data);
+    } catch (err) {
+      finishBtn.disabled = false;
+      finishBtn.textContent = "Submit quiz";
+      alert("Couldn't submit the quiz. Is the backend running?");
+    }
+  }
+
+  function renderResults(data) {
+    const questionMap = {};
+    questions.forEach(q => questionMap[q.id] = q);
+
+    document.getElementById("score-text").textContent = `${data.correct} / ${data.total}`;
+
+    const resultsListEl = document.getElementById("results-list");
+    resultsListEl.innerHTML = data.results.map(r => {
+      const q = questionMap[r.question_id];
+      const statusClass = r.correct ? "correct" : "incorrect";
+      const statusLabel = r.correct ? "Correct" : "Incorrect";
+      const detail = r.feedback ? r.feedback : (!r.correct ? `Correct answer: ${r.correct_answer}` : "");
+      return `
+        <div class="result-card ${statusClass}">
+          <span class="result-status ${statusClass}">${statusLabel}</span>
+          <div class="result-question">${q ? q.question_text : "Question"}</div>
+          ${detail ? `<div class="result-detail">${detail}</div>` : ""}
+        </div>
+      `;
+    }).join("");
+
+    showView(resultsView);
+  }
+
+  document.getElementById("retake-btn").addEventListener("click", async () => {
+    showView(loadingView);
+    try {
+      const genRes = await fetch(`${API_BASE}/quiz/generate/${videoId}`, { method: "POST" });
+      const genData = await genRes.json();
+      if (genData.status === "error") {
+        errorMessage.textContent = genData.message;
+        showView(errorView);
+        return;
+      }
+      const quizRes = await fetch(`${API_BASE}/quiz/${videoId}`);
+      const quizData = await quizRes.json();
+      questions = quizData.questions;
+      startDeck();
+    } catch (err) {
+      errorMessage.textContent = "Couldn't reach the backend.";
+      showView(errorView);
+    }
+  });
+
+  init();
+</script>
+
+</body>
+</html>
